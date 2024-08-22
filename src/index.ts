@@ -198,8 +198,9 @@ export default class SelectionArea extends EventTarget<SelectionEvents> {
     const resolvedBoundaries = selectAll(_options.boundaries, _options.document)
 
     // Check in which container the user currently acts
-    this._targetElement = resolvedBoundaries.find((el) =>
-      intersects(el.getBoundingClientRect(), targetBoundingClientRect)
+    this._targetElement = resolvedBoundaries.find((el) => {
+      return intersects(el.getBoundingClientRect(), targetBoundingClientRect)
+    }
     )
 
     // Check if area starts in one of the start areas / boundaries
@@ -439,8 +440,8 @@ export default class SelectionArea extends EventTarget<SelectionEvents> {
     _areaLocation.x2 = Rx + this._container!.scrollLeft
     _areaLocation.y2 = Ry + this._container!.scrollTop
 
+    _areaClientLocation.x2 = x
     _areaClientLocation.y2 = y
-    _areaClientLocation.x1 = x
 
 
     if (
@@ -536,7 +537,7 @@ export default class SelectionArea extends EventTarget<SelectionEvents> {
     this.wheelTimer = setTimeout(() => {
       const Ry = y - this._containerRect!.top
       const Rx = x - this._containerRect!.left
-      this._areaLocation.x2 = Rx
+      this._areaLocation.x2 = Rx + this._container!.scrollLeft
       this._areaLocation.y2 = Ry + this._container!.scrollTop
       this._frame.next(null)
     }, 100)
@@ -549,13 +550,13 @@ export default class SelectionArea extends EventTarget<SelectionEvents> {
     const { x1, y1 } = _areaLocation
     let { x2, y2 } = _areaLocation
 
+
     if (_areaClientLocation.x2 < _containerRect!.left) {
-      _scrollSpeed.x = scrollLeft ? -Math.abs(_containerRect!.left - x2) : 0
+      _scrollSpeed.x = scrollLeft ? -abs(_containerRect!.left - x2) : 0;
       x2 = Math.max(x2, this._container!.scrollLeft)
-    } else if (x2 > this._container!.scrollLeft + this._container!.clientWidth
-    ) {
-      _scrollSpeed.x = scrollWidth - scrollLeft - clientWidth ? Math.abs(this._container!.scrollLeft + this._container!.clientWidth - x2) : 0
-      x2 = Math.min(x2, this._container!.scrollLeft + this._container!.clientWidth)
+    } else if (_areaClientLocation.x2 > _containerRect!.right) {
+      _scrollSpeed.x = scrollWidth - scrollLeft - clientWidth ? Math.abs(_containerRect!.left + this._container!.clientWidth - x2) : 0
+      x2 = clientWidth + scrollLeft
     } else {
       _scrollSpeed.x = 0
     }
@@ -576,6 +577,7 @@ export default class SelectionArea extends EventTarget<SelectionEvents> {
     const y3 = Math.min(y1, y2)
     const x4 = Math.max(x1, x2)
     const y4 = Math.max(y1, y2)
+
 
     // Update the _areaRect with the new values
     _areaRect.x = x3
