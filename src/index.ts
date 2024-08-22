@@ -61,6 +61,7 @@ export default class SelectionArea extends EventTarget<SelectionEvents> {
 
   // Dynamically constructed area rect
   private _areaLocation: AreaLocation = { y1: 0, x2: 0, y2: 0, x1: 0 }
+  private _areaClientLocation: AreaLocation = { y1: 0, x2: 0, y2: 0, x1: 0 }
 
   // If a single click is being performed.
   // It's a single-click until the user dragged the mouse.
@@ -99,7 +100,7 @@ export default class SelectionArea extends EventTarget<SelectionEvents> {
             : { x: 10, y: 10, ...opt.behaviour.startThreshold }
           : { x: 10, y: 10 },
         scrolling: {
-          speedDivider: 10,
+          speedDivider: 20,
           manualSpeed: 750,
           ...opt.behaviour?.scrolling,
           startScrollMargins: {
@@ -216,6 +217,7 @@ export default class SelectionArea extends EventTarget<SelectionEvents> {
     }
 
     this._areaLocation = { x1: Rx, y1: Ry, x2: 0, y2: 0 }
+    this._areaClientLocation = { x1: x, y1: y, x2: 0, y2: 0 }
 
     // Lock scrolling in target container
     const scrollElement = document.scrollingElement ?? document.body
@@ -231,7 +233,7 @@ export default class SelectionArea extends EventTarget<SelectionEvents> {
     on(document, ["touchmove", "mousemove"], this._delayedTapMove, {
       passive: false,
     })
-    // on(document, ["mouseup", "touchcancel", "touchend"], this._onTapStop)
+    on(document, ["mouseup", "touchcancel", "touchend"], this._onTapStop)
     on(document, "scroll", this._onScroll)
   }
 
@@ -425,15 +427,20 @@ export default class SelectionArea extends EventTarget<SelectionEvents> {
 
   _onTapMove(evt: MouseEvent | TouchEvent): void {
     const { x, y } = simplifyEvent(evt)
+
+
     const Ry = y - this._containerRect!.top
     const Rx = x - this._containerRect!.left
 
-    const { _scrollSpeed, _areaLocation, _options, _frame } = this
+    const { _scrollSpeed, _areaLocation, _options, _frame, _areaClientLocation } = this
     const { speedDivider } = _options.behaviour.scrolling
     const _targetElement = this._container as Element
 
-    _areaLocation.x2 = Rx
+    _areaLocation.x2 = Rx + this._container!.scrollLeft
     _areaLocation.y2 = Ry + this._container!.scrollTop
+
+    _areaClientLocation.y2 = y
+    _areaClientLocation.x1 = x
 
 
     if (
@@ -452,16 +459,16 @@ export default class SelectionArea extends EventTarget<SelectionEvents> {
 
 
         // Reduce velocity, use ceil in both directions to scroll at least 1px per frame
-        const { scrollTop, scrollLeft } = _targetElement
+        const { scrollTop, scrollLeft, scrollHeight, clientHeight } = _targetElement
 
         if (_scrollSpeed.y) {
           _targetElement.scrollTop += ceil(_scrollSpeed.y / speedDivider)
-          // _areaLocation.y1 -= _targetElement.scrollTop - scrollTop
+          _areaLocation.y2 = Ry
         }
 
         if (_scrollSpeed.x) {
           _targetElement.scrollLeft += ceil(_scrollSpeed.x / speedDivider)
-          // _areaLocation.x1 -= _targetElement.scrollLeft - scrollLeft
+          _areaLocation.x2 = Rx
         }
 
         /**
@@ -536,14 +543,14 @@ export default class SelectionArea extends EventTarget<SelectionEvents> {
   }
 
   _recalculateSelectionAreaRect(): void {
-    const { _scrollSpeed, _areaLocation, _areaRect, _targetElement, _container } = this
+    const { _scrollSpeed, _areaLocation, _areaRect, _targetElement, _container, _areaClientLocation, _containerRect } = this
     const { scrollTop, scrollHeight, clientHeight, scrollLeft, scrollWidth, clientWidth, } = _container as Element
 
     const { x1, y1 } = _areaLocation
     let { x2, y2 } = _areaLocation
 
-    if (x2 < this._container!.scrollLeft) {
-      _scrollSpeed.x = scrollLeft ? -Math.abs(this._container!.scrollLeft - x2) : 0
+    if (_areaClientLocation.x2 < _containerRect!.left) {
+      _scrollSpeed.x = scrollLeft ? -Math.abs(_containerRect!.left - x2) : 0
       x2 = Math.max(x2, this._container!.scrollLeft)
     } else if (x2 > this._container!.scrollLeft + this._container!.clientWidth
     ) {
@@ -554,14 +561,12 @@ export default class SelectionArea extends EventTarget<SelectionEvents> {
     }
 
 
-
-    if (y2 <= this._container!.scrollTop) {
-      _scrollSpeed.y = scrollTop ? -Math.abs(this._container!.scrollTop - y2 -1 ) : 0
+    if (_areaClientLocation.y2 < _containerRect!.top) {
+      _scrollSpeed.y = scrollTop ? -abs(_containerRect!.top - y2) : 0;
       y2 = Math.max(y2, this._container!.scrollTop)
-    } else if (y2 > this._container!.scrollTop + this._container!.clientHeight) {
-
-      _scrollSpeed.y = scrollHeight - scrollTop - clientHeight ? Math.abs(this._container!.scrollTop + this._container!.clientHeight - y2) : 0
-      y2 = Math.min(y2, this._container!.scrollTop + this._container!.clientHeight)
+    } else if (_areaClientLocation.y2 > _containerRect!.bottom) {
+      _scrollSpeed.y = scrollHeight - scrollTop - clientHeight ? Math.abs(_containerRect!.top + this._container!.clientHeight - y2) : 0
+      y2 = clientHeight + scrollTop
     } else {
       _scrollSpeed.y = 0
     }
