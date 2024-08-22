@@ -1,5 +1,6 @@
 export type Intersection = 'center' | 'cover' | 'touch'
 
+
 /**
  * Check if two DOM-Elements intersects each other.
  * @param a BoundingClientRect of the first element.
@@ -31,4 +32,38 @@ export function intersects(a: DOMRect, b: DOMRect, mode: Intersection = 'touch')
                 a.top <= b.bottom;
         }
     }
+}
+
+export function intersectsScroll(a: DOMRect, b: DOMRect, mode: Intersection = 'touch', container: HTMLElement): boolean {
+    const containerRect = container.getBoundingClientRect()
+    const scrollLeft = container.scrollLeft
+    const scrollTop = container.scrollTop
+
+
+    // if (!(a.right >= b.left - containerRect.left)) {
+    //     console.log(1, 'fj')
+    // }
+
+    // if (!(a.left - containerRect.left <= b.right)) {
+    //     console.log(2, 'fj')
+    // }
+
+    // if (!(a.bottom >= b.top - containerRect.top)) {
+    //     console.log(3, 'fj')
+    // }
+
+    // if (!(a.top <= b.bottom - containerRect.top)) {
+
+
+    //     console.log(4, 'fj')
+    // }
+
+
+
+    // 198 is container to left
+    return a.right >= b.left - containerRect.left &&
+        a.left + containerRect.left  <= b.right + scrollLeft &&
+        // 94 is container to top
+        a.bottom - scrollTop  >= b.top - containerRect.top &&
+        a.top <= b.bottom - containerRect.top + scrollTop;
 }

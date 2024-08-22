@@ -22,6 +22,7 @@ import {
   SelectAllSelectors,
   simplifyEvent,
   shouldTrigger,
+  intersectsScroll,
 } from "./utils"
 
 // Re-export types
@@ -180,7 +181,7 @@ export default class SelectionArea extends EventTarget<SelectionEvents> {
     this._container = selectAll(container, document)[0]
     this._containerRect = this._container.getBoundingClientRect()
 
-    const Rx = x - this._containerRect.left
+    const Rx = x - this._containerRect.left + this._container.scrollLeft
     const Ry = y - this._containerRect.top + this._container.scrollTop
 
     const { _options } = this
@@ -199,7 +200,7 @@ export default class SelectionArea extends EventTarget<SelectionEvents> {
 
     // Check in which container the user currently acts
     this._targetElement = resolvedBoundaries.find((el) => {
-      return intersects(el.getBoundingClientRect(), targetBoundingClientRect)
+      return intersects(el.getBoundingClientRect(), targetBoundingClientRect, _options.behaviour.intersect)
     }
     )
 
@@ -647,8 +648,9 @@ export default class SelectionArea extends EventTarget<SelectionEvents> {
     for (let i = 0; i < _selectables.length; i++) {
       const node = _selectables[i]
 
+
       // Check if area intersects element
-      if (intersects(_areaRect, node.getBoundingClientRect(), intersect)) {
+      if (intersectsScroll(_areaRect, node.getBoundingClientRect(), intersect, this._container as HTMLElement)) {
         // Check if the element wasn't present in the last selection.
         if (!selected.includes(node)) {
           // Check if user wants to invert the selection for already selected elements
