@@ -1,7 +1,7 @@
 "use client"
 import Image from "next/image"
-import SelectionArea from ".."
 import React, { useEffect } from "react"
+import { SelectionArea } from "../internal"
 
 let called = false
 
@@ -13,7 +13,6 @@ export default function Home() {
       selectables: ["main > section > li"],
       boundaries: ["main > section"],
       container:"#scroll_container",
-      selectionContainerClass:"clipping-container",
     })
       .on("start", ({ store, event }) => {
         if (!(event as MouseEvent).ctrlKey && !(event as MouseEvent).metaKey) {
@@ -77,7 +76,57 @@ export default function Home() {
         <li>item</li>
         <li>item</li>
         <li>item</li>
-                <li>item</li>
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
+        <li>item</li>
         <li>item</li>
         <li>item</li>
         <li>item</li>

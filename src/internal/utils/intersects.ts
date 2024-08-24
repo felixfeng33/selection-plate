@@ -40,26 +40,6 @@ export function intersectsScroll(a: DOMRect, b: DOMRect, mode: Intersection = 't
     const scrollTop = container.scrollTop
 
 
-    // if (!(a.right >= b.left - containerRect.left)) {
-    //     console.log(1, 'fj')
-    // }
-
-    // if (!(a.left - containerRect.left <= b.right)) {
-    //     console.log(2, 'fj')
-    // }
-
-    // if (!(a.bottom >= b.top - containerRect.top)) {
-    //     console.log(3, 'fj')
-    // }
-
-    // if (!(a.top <= b.bottom - containerRect.top)) {
-
-
-    //     console.log(4, 'fj')
-    // }
-
-
-
     // 198 is container to left
     return a.right >= b.left - containerRect.left &&
         a.left + containerRect.left  <= b.right + scrollLeft &&
